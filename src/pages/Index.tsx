@@ -73,15 +73,33 @@ const Index = () => {
   const [form, setForm] = useState({ name: '', address: '' });
   const [sellerOpen, setSellerOpen] = useState(false);
   const [sellerForm, setSellerForm] = useState({ firstName: '', lastName: '', email: '' });
+  const [sellerLoading, setSellerLoading] = useState(false);
 
-  const submitSeller = () => {
+  const submitSeller = async () => {
     if (!sellerForm.firstName || !sellerForm.lastName || !sellerForm.email) {
       toast({ title: 'Заполните данные', description: 'Укажите имя, фамилию и email', variant: 'destructive' });
       return;
     }
-    setSellerOpen(false);
-    setSellerForm({ firstName: '', lastName: '', email: '' });
-    toast({ title: 'Заявка отправлена', description: 'Администратор рассмотрит её в ближайшее время' });
+    setSellerLoading(true);
+    try {
+      const res = await fetch('https://functions.poehali.dev/5f269a4a-4ebf-42c5-abd8-45088de669d2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sellerForm),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSellerOpen(false);
+        setSellerForm({ firstName: '', lastName: '', email: '' });
+        toast({ title: 'Заявка отправлена!', description: 'Администратор получил уведомление и свяжется с вами' });
+      } else {
+        toast({ title: 'Ошибка', description: data.error || 'Попробуйте позже', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Ошибка сети', description: 'Проверьте интернет и попробуйте снова', variant: 'destructive' });
+    } finally {
+      setSellerLoading(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -414,8 +432,8 @@ const Index = () => {
               <Label>Email</Label>
               <Input type="email" value={sellerForm.email} onChange={(e) => setSellerForm({ ...sellerForm, email: e.target.value })} placeholder="seller@mail.com" />
             </div>
-            <Button className="w-full" onClick={submitSeller}>
-              Отправить заявку
+            <Button className="w-full" onClick={submitSeller} disabled={sellerLoading}>
+              {sellerLoading ? <><Icon name="Loader2" size={16} className="mr-2 animate-spin" /> Отправка...</> : 'Отправить заявку'}
             </Button>
           </div>
         </DialogContent>
