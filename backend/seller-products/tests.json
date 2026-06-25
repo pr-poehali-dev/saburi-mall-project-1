@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Public catalog",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "list_public"},
+      "expectedStatus": 200
+    },
+    {
+      "name": "Add product without auth",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "add_product", "token": "invalid"},
+      "expectedStatus": 401
+    }
+  ]
+}

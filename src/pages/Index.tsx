@@ -7,13 +7,14 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter,
 } from '@/components/ui/sheet';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import SellerCabinet from '@/components/SellerCabinet';
 
 const WHATSAPP = '929221515';
 const BANK_CARD = '929221515';
@@ -65,42 +66,14 @@ type CartItem = Product & { qty: number };
 const fmt = (n: number) => n.toLocaleString('ru-RU') + ' c.';
 
 const Index = () => {
+  const [showCabinet, setShowCabinet] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [form, setForm] = useState({ name: '', address: '' });
-  const [sellerOpen, setSellerOpen] = useState(false);
-  const [sellerForm, setSellerForm] = useState({ firstName: '', lastName: '', email: '' });
-  const [sellerLoading, setSellerLoading] = useState(false);
 
-  const submitSeller = async () => {
-    if (!sellerForm.firstName || !sellerForm.lastName || !sellerForm.email) {
-      toast({ title: 'Заполните данные', description: 'Укажите имя, фамилию и email', variant: 'destructive' });
-      return;
-    }
-    setSellerLoading(true);
-    try {
-      const res = await fetch('https://functions.poehali.dev/5f269a4a-4ebf-42c5-abd8-45088de669d2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sellerForm),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSellerOpen(false);
-        setSellerForm({ firstName: '', lastName: '', email: '' });
-        toast({ title: 'Заявка отправлена!', description: 'Администратор получил уведомление и свяжется с вами' });
-      } else {
-        toast({ title: 'Ошибка', description: data.error || 'Попробуйте позже', variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'Ошибка сети', description: 'Проверьте интернет и попробуйте снова', variant: 'destructive' });
-    } finally {
-      setSellerLoading(false);
-    }
-  };
 
   const filtered = useMemo(() => {
     return PRODUCTS.filter((p) => {
@@ -157,6 +130,10 @@ const Index = () => {
     setSearch('');
   };
 
+  if (showCabinet) {
+    return <SellerCabinet onClose={() => setShowCabinet(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -183,7 +160,7 @@ const Index = () => {
           </div>
 
           {/* Seller */}
-          <Button variant="ghost" className="hidden md:flex gap-2 text-foreground" onClick={() => setSellerOpen(true)}>
+          <Button variant="ghost" className="hidden md:flex gap-2 text-foreground" onClick={() => setShowCabinet(true)}>
             <Icon name="Store" size={18} /> Продавцам
           </Button>
 
@@ -401,43 +378,12 @@ const Index = () => {
 
       {/* Floating seller button */}
       <button
-        onClick={() => setSellerOpen(true)}
+        onClick={() => setShowCabinet(true)}
         className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white font-semibold pl-4 pr-5 py-3 rounded-full shadow-lg hover:scale-105 transition-transform"
       >
         <Icon name="Store" size={20} />
-        <span className="hidden sm:inline">Стать продавцом</span>
+        <span className="hidden sm:inline">Кабинет продавца</span>
       </button>
-
-      {/* Seller dialog */}
-      <Dialog open={sellerOpen} onOpenChange={setSellerOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Стать продавцом</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Заполните заявку. После проверки администратор активирует ваш аккаунт, и вы сможете добавлять товары.
-          </p>
-          <div className="space-y-3 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Имя</Label>
-                <Input value={sellerForm.firstName} onChange={(e) => setSellerForm({ ...sellerForm, firstName: e.target.value })} placeholder="Иван" />
-              </div>
-              <div className="space-y-1">
-                <Label>Фамилия</Label>
-                <Input value={sellerForm.lastName} onChange={(e) => setSellerForm({ ...sellerForm, lastName: e.target.value })} placeholder="Иванов" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label>Email</Label>
-              <Input type="email" value={sellerForm.email} onChange={(e) => setSellerForm({ ...sellerForm, email: e.target.value })} placeholder="seller@mail.com" />
-            </div>
-            <Button className="w-full" onClick={submitSeller} disabled={sellerLoading}>
-              {sellerLoading ? <><Icon name="Loader2" size={16} className="mr-2 animate-spin" /> Отправка...</> : 'Отправить заявку'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Checkout dialog */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
