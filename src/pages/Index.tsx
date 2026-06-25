@@ -71,6 +71,18 @@ const Index = () => {
   const [activeSub, setActiveSub] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [form, setForm] = useState({ name: '', address: '' });
+  const [sellerOpen, setSellerOpen] = useState(false);
+  const [sellerForm, setSellerForm] = useState({ firstName: '', lastName: '', email: '' });
+
+  const submitSeller = () => {
+    if (!sellerForm.firstName || !sellerForm.lastName || !sellerForm.email) {
+      toast({ title: 'Заполните данные', description: 'Укажите имя, фамилию и email', variant: 'destructive' });
+      return;
+    }
+    setSellerOpen(false);
+    setSellerForm({ firstName: '', lastName: '', email: '' });
+    toast({ title: 'Заявка отправлена', description: 'Администратор рассмотрит её в ближайшее время' });
+  };
 
   const filtered = useMemo(() => {
     return PRODUCTS.filter((p) => {
@@ -153,40 +165,9 @@ const Index = () => {
           </div>
 
           {/* Seller */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" className="hidden md:flex gap-2 text-foreground">
-                <Icon name="Store" size={18} /> Продавцам
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Стать продавцом</DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                Заполните заявку. После проверки администратор активирует ваш аккаунт, и вы сможете добавлять товары.
-              </p>
-              <div className="space-y-3 pt-2">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label>Имя</Label>
-                    <Input placeholder="Иван" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Фамилия</Label>
-                    <Input placeholder="Иванов" />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label>Email</Label>
-                  <Input type="email" placeholder="seller@mail.com" />
-                </div>
-                <Button className="w-full" onClick={() => toast({ title: 'Заявка отправлена', description: 'Администратор рассмотрит её в ближайшее время' })}>
-                  Отправить заявку
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button variant="ghost" className="hidden md:flex gap-2 text-foreground" onClick={() => setSellerOpen(true)}>
+            <Icon name="Store" size={18} /> Продавцам
+          </Button>
 
           {/* Cart */}
           <Sheet>
@@ -399,6 +380,46 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Floating seller button */}
+      <button
+        onClick={() => setSellerOpen(true)}
+        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white font-semibold pl-4 pr-5 py-3 rounded-full shadow-lg hover:scale-105 transition-transform"
+      >
+        <Icon name="Store" size={20} />
+        <span className="hidden sm:inline">Стать продавцом</span>
+      </button>
+
+      {/* Seller dialog */}
+      <Dialog open={sellerOpen} onOpenChange={setSellerOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Стать продавцом</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Заполните заявку. После проверки администратор активирует ваш аккаунт, и вы сможете добавлять товары.
+          </p>
+          <div className="space-y-3 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Имя</Label>
+                <Input value={sellerForm.firstName} onChange={(e) => setSellerForm({ ...sellerForm, firstName: e.target.value })} placeholder="Иван" />
+              </div>
+              <div className="space-y-1">
+                <Label>Фамилия</Label>
+                <Input value={sellerForm.lastName} onChange={(e) => setSellerForm({ ...sellerForm, lastName: e.target.value })} placeholder="Иванов" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>Email</Label>
+              <Input type="email" value={sellerForm.email} onChange={(e) => setSellerForm({ ...sellerForm, email: e.target.value })} placeholder="seller@mail.com" />
+            </div>
+            <Button className="w-full" onClick={submitSeller}>
+              Отправить заявку
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Checkout dialog */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
