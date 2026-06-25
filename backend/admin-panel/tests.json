@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Wrong password blocked",
+      "method": "POST",
+      "path": "/",
+      "body": {"password": "wrongpassword", "action": "list_sellers"},
+      "expectedStatus": 403
+    }
+  ]
+}

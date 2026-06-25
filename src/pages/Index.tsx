@@ -15,6 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import SellerCabinet from '@/components/SellerCabinet';
+import AdminPanel from '@/components/AdminPanel';
 
 const WHATSAPP = '929221515';
 const BANK_CARD = '929221515';
@@ -67,6 +68,18 @@ const fmt = (n: number) => n.toLocaleString('ru-RU') + ' c.';
 
 const Index = () => {
   const [showCabinet, setShowCabinet] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = () => {
+    const next = logoClicks + 1;
+    setLogoClicks(next);
+    if (next >= 5) {
+      setLogoClicks(0);
+      setShowAdmin(true);
+    }
+    setTimeout(() => setLogoClicks(0), 3000);
+  };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState<string | null>(null);
@@ -130,6 +143,10 @@ const Index = () => {
     setSearch('');
   };
 
+  if (showAdmin) {
+    return <AdminPanel onClose={() => setShowAdmin(false)} />;
+  }
+
   if (showCabinet) {
     return <SellerCabinet onClose={() => setShowCabinet(false)} />;
   }
@@ -140,7 +157,10 @@ const Index = () => {
       <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="container py-3 flex items-center gap-4">
           <button onClick={resetFilter} className="flex items-center gap-2 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <div
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center select-none"
+              onClick={(e) => { e.stopPropagation(); handleLogoClick(); }}
+            >
               <Icon name="ShoppingBag" className="text-white" size={22} />
             </div>
             <div className="hidden sm:block text-left leading-tight">
